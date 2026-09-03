@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏆 ระบบกีฬาสี - ส้ม vs ชมพู</title>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <div class="logo">🏆</div>
+            <h1>ระบบกีฬาสี</h1>
+            <p class="subtitle">🍊 สีส้ม VS สีชมพู 🌸</p>
+        </header>
+
+        <!-- Scoreboard -->
+        <section class="scoreboard">
+            <div class="score-card orange" id="orangeCard">
+                <span class="winner-badge" id="orangeWinner">🏆 ชนะ</span>
+                <div class="team-header">
+                    <span class="team-emoji">🍊</span>
+                    <span class="team-name">ทีมสีส้ม</span>
+                </div>
+                <div class="score-value" id="orangeScore">0</div>
+                <div class="score-label">คะแนนรวม</div>
+            </div>
+            <div class="score-card pink" id="pinkCard">
+                <span class="winner-badge" id="pinkWinner">🏆 ชนะ</span>
+                <div class="team-header">
+                    <span class="team-emoji">🌸</span>
+                    <span class="team-name">ทีมสีชมพู</span>
+                </div>
+                <div class="score-value" id="pinkScore">0</div>
+                <div class="score-label">คะแนนรวม</div>
+            </div>
+        </section>
+
+        <!-- Tabs -->
+        <div class="tab-bar">
+            <button class="tab-btn active" data-tab="add" onclick="switchTab('add')">➕ กรอกคะแนน</button>
+            <button class="tab-btn" data-tab="history" onclick="switchTab('history')">📋 ประวัติคะแนน</button>
+            <button class="tab-btn" data-tab="config" onclick="switchTab('config')">⚙️ ตั้งค่า</button>
+        </div>
+
+        <!-- Tab: Add Score -->
+        <section id="tab-add" class="tab-content">
+            <div class="card">
+                <div class="card-title">✏️ กรอกคะแนนใหม่</div>
+
+                <div class="loading" id="loadAdd">
+                    <div class="spinner"></div>
+                    <p>กำลังโหลด...</p>
+                </div>
+
+                <form id="scoreForm" onsubmit="submitScore(event)">
+                    <div class="form-group">
+                        <label>เลือกทีม</label>
+                        <div class="team-select" id="teamSelect">
+                            <div class="team-option orange" data-team="orange" onclick="selectTeam(this)">
+                                🍊 สีส้ม
+                            </div>
+                            <div class="team-option pink" data-team="pink" onclick="selectTeam(this)">
+                                🌸 สีชมพู
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="eventSelect">รายการแข่งขัน</label>
+                            <select id="eventSelect" required></select>
+                        </div>
+                        <div class="form-group">
+                            <label for="scoreInput">คะแนน</label>
+                            <input type="number" id="scoreInput" placeholder="เช่น 10" min="0" step="0.5" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-submit" id="submitBtn">💾 บันทึกคะแนน</button>
+                </form>
+            </div>
+
+            <div class="card" id="quickAddCard" style="display:none">
+                <div class="card-title">⚡ ลงคะแนนด่วน</div>
+                <div class="form-grid" id="quickButtons"></div>
+            </div>
+        </section>
+
+        <!-- Tab: History -->
+        <section id="tab-history" class="tab-content" style="display:none">
+            <div class="card">
+                <div class="card-title">📋 ประวัติคะแนนทั้งหมด</div>
+                <div class="loading" id="loadHistory">
+                    <div class="spinner"></div>
+                    <p>กำลังโหลด...</p>
+                </div>
+                <div class="table-wrapper">
+                    <table id="scoreTable">
+                        <thead>
+                            <tr>
+                                <th>เวลา</th>
+                                <th>ทีม</th>
+                                <th>รายการ</th>
+                                <th>คะแนน</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="scoreTableBody">
+                            <tr>
+                                <td colspan="5">
+                                    <div class="empty-state">
+                                        <div class="emoji">📭</div>
+                                        <p>ยังไม่มีข้อมูลคะแนน</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tab: Config -->
+        <section id="tab-config" class="tab-content" style="display:none">
+            <div class="card">
+                <div class="card-title">🛡️ พื้นที่เสี่ยง</div>
+                <p style="color: var(--text-secondary); margin-bottom: 20px;">
+                    ⚠️ การล้างคะแนนจะลบข้อมูลทั้งหมดอย่างถาวร ไม่สามารถกู้คืนได้
+                </p>
+                <button class="btn-reset" onclick="resetScores()">🗑️ ล้างคะแนนทั้งหมด</button>
+            </div>
+
+            <div class="card">
+                <div class="card-title">⚙️ ข้อมูลระบบ</div>
+                <div style="color: var(--text-secondary); font-size: 0.95rem;">
+                    <p>เวอร์ชัน: <strong>1.0.0</strong></p>
+                    <p style="margin-top: 5px;">ระบบกีฬาสี 🏆</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer>
+            🏆 ระบบกีฬาสี 2569 • โดยทีมส้มและชมพู
+        </footer>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
