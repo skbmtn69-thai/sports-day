@@ -36,31 +36,7 @@ async function callAPI(action, params = {}) {
   return JSON.parse(text);
 }
 
-async function callAPIWithBody(action, params = {}) {
-  const url = new URL(APP_SCRIPT_URL);
-  url.searchParams.append('action', action);
 
-  const formBody = new URLSearchParams();
-  Object.entries(params).forEach(([key, value]) => {
-    formBody.append(key, value);
-  });
-
-  const response = await fetch(url, {
-    method: 'POST',
-    mode: 'cors',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded'
-    },
-    body: formBody.toString()
-  });
-
-  if (!response.ok) {
-    throw new Error('HTTP Error: ' + response.status);
-  }
-
-  const text = await response.text();
-  return JSON.parse(text);
-}
 
 // ====== Load Data ======
 async function loadData() {
@@ -244,7 +220,7 @@ async function submitScore(e) {
   submitBtn.textContent = '⏳ กำลังบันทึก...';
 
   try {
-    const result = await callAPIWithBody('addScore', {
+    const result = await callAPI('addScore', {
       team: state.selectedTeam,
       event: event,
       score: score
@@ -268,7 +244,7 @@ async function submitScore(e) {
 
 async function quickAddScore(team, eventName) {
   try {
-    const result = await callAPIWithBody('addScore', {
+    const result = await callAPI('addScore', {
       team: team,
       event: eventName,
       score: 10
@@ -293,7 +269,7 @@ async function deleteScoreEntry(row, team, event, score) {
   }
 
   try {
-    const result = await callAPIWithBody('deleteScore', { row: row });
+    const result = await callAPI('deleteScore', { row: row });
     if (result.success) {
       showToast('✅ ลบรายการเรียบร้อย', 'success');
       await loadData();
@@ -313,7 +289,7 @@ async function resetScores() {
   }
 
   try {
-    const result = await callAPIWithBody('resetScores', {});
+    const result = await callAPI('resetScores', {});
     if (result.success) {
       showToast('✅ ล้างคะแนนทั้งหมดเรียบร้อย', 'success');
       await loadData();
