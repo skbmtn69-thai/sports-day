@@ -1,7 +1,7 @@
 // ====== การตั้งค่าหลัก ======
 
 // วาง Web App URL ที่ได้จาก Google Apps Script Deployment
-const APP_SCRIPT_URL = 'YOUR_APP_SCRIPT_URL_HERE';
+const APP_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzT5WYg4T2BN6_hodTjpL6ima_tcBbkh4TYA4UBwB6vBiHRi8EKV_PSxotBoz8z6Iaw9g/exec';
 
 // ชื่อทีม
 const TEAMS = {
