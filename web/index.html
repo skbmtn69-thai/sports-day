@@ -41,8 +41,8 @@
         <!-- Tabs -->
         <div class="tab-bar">
             <button class="tab-btn active" data-tab="add" onclick="switchTab('add')">➕ กรอกคะแนน</button>
-            <button class="tab-btn" data-tab="history" onclick="switchTab('history')">📋 ประวัติคะแนน</button>
-            <button class="tab-btn" data-tab="config" onclick="switchTab('config')">⚙️ ตั้งค่า</button>
+            <button class="tab-btn" data-tab="events" onclick="switchTab('events')">🏅 จัดการกีฬา</button>
+            <button class="tab-btn" data-tab="history" onclick="switchTab('history')">📋 ประวัติ</button>
         </div>
 
         <!-- Tab: Add Score -->
@@ -68,6 +68,17 @@
                         </div>
                     </div>
 
+                    <!-- แท็บกรองประเภทกีฬา -->
+                    <div class="form-group">
+                        <label>ประเภทกีฬา</label>
+                        <div class="category-tabs" id="categoryTabs">
+                            <button type="button" class="cat-tab active" data-category="all" onclick="filterByCategory('all', this)">ทั้งหมด</button>
+                            <button type="button" class="cat-tab" data-category="male" onclick="filterByCategory('male', this)">👦 ชาย</button>
+                            <button type="button" class="cat-tab" data-category="female" onclick="filterByCategory('female', this)">👧 หญิง</button>
+                            <button type="button" class="cat-tab" data-category="mixed" onclick="filterByCategory('mixed', this)">🤝 ผสม</button>
+                        </div>
+                    </div>
+
                     <div class="form-grid">
                         <div class="form-group">
                             <label for="eventSelect">รายการแข่งขัน</label>
@@ -85,7 +96,68 @@
 
             <div class="card" id="quickAddCard" style="display:none">
                 <div class="card-title">⚡ ลงคะแนนด่วน</div>
+                <div id="quickCategoryTabs" class="category-tabs" style="margin-bottom: 15px;">
+                    <button type="button" class="cat-tab active" data-category="all" onclick="filterQuickButtons('all', this)">ทั้งหมด</button>
+                    <button type="button" class="cat-tab" data-category="male" onclick="filterQuickButtons('male', this)">👦 ชาย</button>
+                    <button type="button" class="cat-tab" data-category="female" onclick="filterQuickButtons('female', this)">👧 หญิง</button>
+                    <button type="button" class="cat-tab" data-category="mixed" onclick="filterQuickButtons('mixed', this)">🤝 ผสม</button>
+                </div>
                 <div class="form-grid" id="quickButtons"></div>
+            </div>
+        </section>
+
+        <!-- Tab: Manage Events -->
+        <section id="tab-events" class="tab-content" style="display:none">
+            <!-- ฟอร์มเพิ่มกีฬา -->
+            <div class="card">
+                <div class="card-title">➕ เพิ่มกีฬาใหม่</div>
+                <form id="eventForm" onsubmit="submitEvent(event)">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="eventNameInput">ชื่อกีฬา</label>
+                            <input type="text" id="eventNameInput" placeholder="เช่น วิ่ง 200 เมตร" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="eventCategorySelect">ประเภท</label>
+                            <select id="eventCategorySelect" required>
+                                <option value="male">👦 ชาย</option>
+                                <option value="female">👧 หญิง</option>
+                                <option value="mixed" selected>🤝 ผสม</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-submit" id="submitEventBtn">➕ เพิ่มกีฬา</button>
+                </form>
+            </div>
+
+            <!-- รายการกีฬาทั้งหมด -->
+            <div class="card">
+                <div class="card-title">🏅 รายการกีฬาทั้งหมด</div>
+                <div class="loading" id="loadEvents">
+                    <div class="spinner"></div>
+                    <p>กำลังโหลด...</p>
+                </div>
+                <div class="table-wrapper">
+                    <table id="eventTable">
+                        <thead>
+                            <tr>
+                                <th>ชื่อกีฬา</th>
+                                <th>ประเภท</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="eventTableBody">
+                            <tr>
+                                <td colspan="3">
+                                    <div class="empty-state">
+                                        <div class="emoji">📭</div>
+                                        <p>ยังไม่มีรายการกีฬา</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </section>
 
@@ -104,13 +176,14 @@
                                 <th>เวลา</th>
                                 <th>ทีม</th>
                                 <th>รายการ</th>
+                                <th>ประเภท</th>
                                 <th>คะแนน</th>
                                 <th></th>
                             </tr>
                         </thead>
                         <tbody id="scoreTableBody">
                             <tr>
-                                <td colspan="5">
+                                <td colspan="6">
                                     <div class="empty-state">
                                         <div class="emoji">📭</div>
                                         <p>ยังไม่มีข้อมูลคะแนน</p>
@@ -119,25 +192,6 @@
                             </tr>
                         </tbody>
                     </table>
-                </div>
-            </div>
-        </section>
-
-        <!-- Tab: Config -->
-        <section id="tab-config" class="tab-content" style="display:none">
-            <div class="card">
-                <div class="card-title">🛡️ พื้นที่เสี่ยง</div>
-                <p style="color: var(--text-secondary); margin-bottom: 20px;">
-                    ⚠️ การล้างคะแนนจะลบข้อมูลทั้งหมดอย่างถาวร ไม่สามารถกู้คืนได้
-                </p>
-                <button class="btn-reset" onclick="resetScores()">🗑️ ล้างคะแนนทั้งหมด</button>
-            </div>
-
-            <div class="card">
-                <div class="card-title">⚙️ ข้อมูลระบบ</div>
-                <div style="color: var(--text-secondary); font-size: 0.95rem;">
-                    <p>เวอร์ชัน: <strong>1.0.0</strong></p>
-                    <p style="margin-top: 5px;">ระบบกีฬาสี 🏆</p>
                 </div>
             </div>
         </section>

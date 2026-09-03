@@ -8,8 +8,8 @@
  * 1. สร้าง Spreadsheet ใหม่ใน Google Drive
  * 2. เอา ID ของ Spreadsheet มาใส่ในตัวแปร SPREADSHEET_ID ด้านล่าง
  * 3. สร้างชีตชื่อผลลัพธ์ดังนี้:
- *    - "scores" (คอลัมน์: timestamp, team, event, score)
- *    - "events" (คอลัมน์: id, name, order, type)
+ *    - "scores" (คอลัมน์: timestamp, team, event, category, score)
+ *    - "events" (คอลัมน์: id, name, category, order)
  * 4. Deploy > New deployment > Web app
  *    - Execute as: Me
  *    - Who has access: Anyone
@@ -18,30 +18,17 @@
 
 var SPREADSHEET_ID = '1ySaM0ogKEOJQiAfiWXMOY_7F7ClmDEPkWWXGvCMjMf4';
 
-// ====== ตั้งค่า CORS ======
-var CORS_HEADERS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type'
-};
-
 // ====== ฟังก์ชันหลัก ======
 
 function doGet(e) {
-  return handleRequest(e, 'GET');
+  return handleRequest(e);
 }
 
 function doPost(e) {
-  return handleRequest(e, 'POST');
+  return handleRequest(e);
 }
 
-function doOptions(e) {
-  return ContentService
-    .createTextOutput('')
-    .setMimeType(ContentService.MimeType.TEXT);
-}
-
-function handleRequest(e, method) {
+function handleRequest(e) {
   var content = ContentService.createTextOutput();
   content.setMimeType(ContentService.MimeType.JSON);
 
@@ -65,6 +52,12 @@ function handleRequest(e, method) {
       case 'deleteScore':
         result = deleteScore(e);
         break;
+      case 'addEvent':
+        result = addEvent(e);
+        break;
+      case 'deleteEvent':
+        result = deleteEvent(e);
+        break;
       default:
         result = { success: false, error: 'Unknown action: ' + action };
         break;
@@ -86,13 +79,12 @@ function getSheet(name) {
   var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
   var sheet = ss.getSheetByName(name);
 
-  // สร้างชีตถ้ายังไม่มี
   if (!sheet) {
     sheet = ss.insertSheet(name);
     if (name === 'scores') {
-      sheet.appendRow(['timestamp', 'team', 'event', 'score']);
+      sheet.appendRow(['timestamp', 'team', 'event', 'category', 'score']);
     } else if (name === 'events') {
-      sheet.appendRow(['id', 'name', 'type', 'order']);
+      sheet.appendRow(['id', 'name', 'category', 'order']);
     }
   }
 
@@ -117,10 +109,9 @@ function getScores() {
   var totalScores = {};
   var eventScores = {};
 
-  // ตารางคะแนนรวม
   values.forEach(function (row) {
     var team = String(row[1]);
-    var score = Number(row[3]) || 0;
+    var score = Number(row[4]) || 0;
 
     if (!totalScores[team]) totalScores[team] = 0;
     totalScores[team] += score;
@@ -138,7 +129,8 @@ function getScores() {
         timestamp: row[0],
         team: row[1],
         event: row[2],
-        score: row[3]
+        category: row[3] || 'mixed',
+        score: row[4]
       };
     }),
     totalScores: totalScores,
@@ -162,13 +154,12 @@ function getEventsFromSheet(sheet) {
       events.push({
         id: String(row[0]),
         name: String(row[1]),
-        type: String(row[2]),
+        category: String(row[2]) || 'mixed',
         order: Number(row[3]) || 0
       });
     }
   });
 
-  // ถ้ายังไม่มี event ใช้ค่าเริ่มต้น
   if (events.length === 0) {
     return DEFAULT_EVENTS;
   }
@@ -177,12 +168,12 @@ function getEventsFromSheet(sheet) {
 }
 
 var DEFAULT_EVENTS = [
-  { id: 'runner', name: 'วิ่ง 100 เมตร', type: 'score', order: 1 },
-  { id: 'relay', name: 'วิ่งผลัด', type: 'score', order: 2 },
-  { id: 'tug', name: 'ชักเย่อ', type: 'score', order: 3 },
-  { id: 'futsal', name: 'ฟุตซอล', type: 'score', order: 4 },
-  { id: 'food', name: 'ร้านอาหาร', type: 'score', order: 5 },
-  { id: 'parade', name: 'ขบวนพาเหรด', type: 'score', order: 6 }
+  { id: 'runner', name: 'วิ่ง 100 เมตร', category: 'male', order: 1 },
+  { id: 'relay', name: 'วิ่งผลัด', category: 'mixed', order: 2 },
+  { id: 'tug', name: 'ชักเย่อ', category: 'mixed', order: 3 },
+  { id: 'futsal', name: 'ฟุตซอล', category: 'male', order: 4 },
+  { id: 'food', name: 'ร้านอาหาร', category: 'mixed', order: 5 },
+  { id: 'parade', name: 'ขบวนพาเหรด', category: 'mixed', order: 6 }
 ];
 
 function addScore(e) {
@@ -190,18 +181,18 @@ function addScore(e) {
 
   var team = e.parameter.team;
   var event = e.parameter.event;
+  var category = e.parameter.category || 'mixed';
   var score = Number(e.parameter.score);
 
   if (!team || !event || isNaN(score)) {
     return { success: false, error: 'ข้อมูลไม่ครบถ้วน (team, event, score)' };
   }
 
-  // ตรวจว่าทีมถูกต้อง
   if (!isValidTeam(team)) {
     return { success: false, error: 'ทีมไม่ถูกต้อง' };
   }
 
-  sheet.appendRow([new Date(), team, event, score]);
+  sheet.appendRow([new Date(), team, event, category, score]);
 
   return { success: true, message: 'บันทึกคะแนนเรียบร้อย' };
 }
@@ -213,7 +204,7 @@ function deleteScore(e) {
   }
 
   var sheet = getScoreSheet();
-  sheet.deleteRow(row); // row 1 คือ header ดังนั้น row ที่ระบุต้องเป็น index จริง
+  sheet.deleteRow(row);
 
   return { success: true, message: 'ลบเรียบร้อย' };
 }
@@ -221,11 +212,49 @@ function deleteScore(e) {
 function resetScores() {
   var sheet = getScoreSheet();
   var values = sheet.getDataRange().getValues();
-  var header = values.shift(); // เก็บ header
+  var header = values.shift();
   sheet.clear();
   sheet.appendRow(header);
 
   return { success: true, message: 'ล้างคะแนนทั้งหมดเรียบร้อย' };
+}
+
+function addEvent(e) {
+  var sheet = getEventSheet();
+
+  var name = e.parameter.name;
+  var category = e.parameter.category || 'mixed';
+
+  if (!name) {
+    return { success: false, error: 'กรุณากรอกชื่อกีฬา' };
+  }
+
+  var id = 'event_' + new Date().getTime();
+  var lastRow = sheet.getLastRow();
+  var order = lastRow;
+
+  sheet.appendRow([id, name, category, order]);
+
+  return { success: true, message: 'เพิ่มกีฬาเรียบร้อย', id: id };
+}
+
+function deleteEvent(e) {
+  var id = e.parameter.id;
+  if (!id) {
+    return { success: false, error: 'ไม่พบรหัสกีฬา' };
+  }
+
+  var sheet = getEventSheet();
+  var values = sheet.getDataRange().getValues();
+
+  for (var i = 1; i < values.length; i++) {
+    if (String(values[i][0]) === id) {
+      sheet.deleteRow(i + 1);
+      return { success: true, message: 'ลบกีฬาเรียบร้อย' };
+    }
+  }
+
+  return { success: false, error: 'ไม่พบรหัสกีฬานี้' };
 }
 
 function isValidTeam(team) {

@@ -9,12 +9,19 @@ const TEAMS = {
   pink: { name: 'สีชมพู', color: '#FF69B4', emoji: '🌸' }
 };
 
-// รายการกิจกรรม
+// ประเภทกีฬา
+const CATEGORIES = {
+  male: { name: 'ชาย', emoji: '👦', color: '#4A90D9' },
+  female: { name: 'หญิง', emoji: '👧', color: '#E91E63' },
+  mixed: { name: 'ผสม', emoji: '🤝', color: '#9B59B6' }
+};
+
+// รายการกิจกรรมเริ่มต้น (ใช้เมื่อไม่มีข้อมูลในชีต)
 const DEFAULT_EVENTS = [
-  { id: 'runner', name: 'วิ่ง 100 เมตร', type: 'score', order: 1 },
-  { id: 'relay', name: 'วิ่งผลัด', type: 'score', order: 2 },
-  { id: 'tug', name: 'ชักเย่อ', type: 'score', order: 3 },
-  { id: 'futsal', name: 'ฟุตซอล', type: 'score', order: 4 },
-  { id: 'food', name: 'ร้านอาหาร', type: 'score', order: 5 },
-  { id: 'parade', name: 'ขบวนพาเหรด', type: 'score', order: 6 }
+  { id: 'runner', name: 'วิ่ง 100 เมตร', category: 'male', order: 1 },
+  { id: 'relay', name: 'วิ่งผลัด', category: 'mixed', order: 2 },
+  { id: 'tug', name: 'ชักเย่อ', category: 'mixed', order: 3 },
+  { id: 'futsal', name: 'ฟุตซอล', category: 'male', order: 4 },
+  { id: 'food', name: 'ร้านอาหาร', category: 'mixed', order: 5 },
+  { id: 'parade', name: 'ขบวนพาเหรด', category: 'mixed', order: 6 }
 ];

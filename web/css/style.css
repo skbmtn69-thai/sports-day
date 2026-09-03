@@ -527,3 +527,60 @@ footer {
     padding: 10px 8px;
   }
 }
+
+/* ====== Category Tabs ====== */
+.category-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.cat-tab {
+  padding: 8px 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 20px;
+  background: white;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: inherit;
+  color: var(--text-secondary);
+}
+
+.cat-tab:hover {
+  border-color: #ccc;
+}
+
+.cat-tab.active {
+  background: var(--gradient-title);
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 4px 15px rgba(255, 140, 0, 0.2);
+}
+
+/* ====== Category Chip ====== */
+.category-chip {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  color: white;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* ====== Icon Button ====== */
+.btn-icon {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.1rem;
+  padding: 5px;
+  border-radius: 8px;
+  transition: background 0.2s ease;
+}
+
+.btn-icon:hover {
+  background: #f0f0f0;
+}
