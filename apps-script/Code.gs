@@ -16,7 +16,7 @@
  * 5. เอา Web App URL ไปวางใน web/js/config.js
  */
 
-var SPREADSHEET_ID = 'YOUR_SPREADSHEET_ID_HERE';
+var SPREADSHEET_ID = '1ySaM0ogKEOJQiAfiWXMOY_7F7ClmDEPkWWXGvCMjMf4';
 
 // ====== ตั้งค่า CORS ======
 var CORS_HEADERS = {
